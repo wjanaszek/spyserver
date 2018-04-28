@@ -1,5 +1,10 @@
 public class SpyServer {
     public static void main(String... args) {
-        System.out.println("Server started");
+        SpyServer spyServer = new SpyServer();
+        System.out.println(spyServer.startServer());
+    }
+
+    public String startServer() {
+        return "Server started";
     }
 }
