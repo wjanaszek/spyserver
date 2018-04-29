@@ -19,7 +19,7 @@ public class SpyServer extends Thread {
     public void run() {
         while (true) {
             try {
-                System.out.println("ST - tasks:");
+                log.info("ST - tasks:");
                 webMessageQueue.getTasks().forEach(t -> log.info(t.toString()));
 
                 Thread.sleep(2000);
