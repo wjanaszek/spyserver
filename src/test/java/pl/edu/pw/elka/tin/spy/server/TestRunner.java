@@ -1,3 +1,5 @@
+package pl.edu.pw.elka.tin.spy.server;
+
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
