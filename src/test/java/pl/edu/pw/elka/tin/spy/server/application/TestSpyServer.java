@@ -1,4 +1,4 @@
-package pl.edu.pw.elka.tin.spy.server;
+package pl.edu.pw.elka.tin.spy.server.application;
 
 import org.junit.Test;
 

@@ -3,6 +3,7 @@ package pl.edu.pw.elka.tin.spy.server;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
+import pl.edu.pw.elka.tin.spy.server.application.TestSpyServer;
 
 public class TestRunner {
     public static void main(String[] args) {
