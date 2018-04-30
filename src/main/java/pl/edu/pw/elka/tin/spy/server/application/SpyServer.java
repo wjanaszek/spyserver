@@ -5,22 +5,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SpyServer extends Thread {
 
-    private WebMessageQueue webMessageQueue;
+    private TasksObserver tasksObserver;
 
     public static void main(String... args) {
         new SpyServer().start();
     }
 
     SpyServer() {
-        this.webMessageQueue = new WebMessageQueue();
-        this.webMessageQueue.start();
+        this.tasksObserver = new TasksObserver();
+        this.tasksObserver.start();
     }
 
     public void run() {
         while (true) {
             try {
                 log.info("ST - tasks:");
-                webMessageQueue.getTasks().forEach(t -> log.info(t.toString()));
+                tasksObserver.getTasks()
+                        .entrySet()
+                        .forEach(t -> log.info(t.toString()));
 
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
@@ -31,7 +33,7 @@ public class SpyServer extends Thread {
     }
 
     public String startServer() {
-        WebMessageQueue mq = new WebMessageQueue();
+        TasksObserver mq = new TasksObserver();
         mq.start();
         return "Server started";
     }

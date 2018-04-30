@@ -6,10 +6,8 @@ import pl.edu.pw.elka.tin.spy.server.domain.SpyRepository;
 import pl.edu.pw.elka.tin.spy.server.domain.task.Task;
 import pl.edu.pw.elka.tin.spy.server.domain.task.TaskStatus;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -23,22 +21,25 @@ public class H2SpyRepository implements SpyRepository {
     }
 
     @Override
-    public List<Task> taskList() {
-        String selectTaskSQL = "SELECT * FROM TASK";
+    public List<Task> taskList(LocalDateTime lastUpdateDT) {
+        String selectTaskSQL = "SELECT * FROM TASKS WHERE UPPER(STATUS) = ? and TIMESTAMP > ?";
         List<Task> tasks = new LinkedList<>();
 
         Connection connection = dbManager.getConnection();
         PreparedStatement stat;
         try {
             stat = connection.prepareStatement(selectTaskSQL);
+            stat.setString(1, TaskStatus.NEW.getText());
+            stat.setTimestamp(2, toTimestamp(lastUpdateDT));
             ResultSet rs = stat.executeQuery();
             while (rs.next()) {
                 tasks.add(
                         new Task(
                                 rs.getInt("ID"),
+                                rs.getTimestamp("TIMESTAMP").toLocalDateTime(),
+                                rs.getInt("CLIENT_ID"),
                                 rs.getString("NAME"),
-                                TaskStatus.fromString(rs.getString("STATUS")),
-                                rs.getTimestamp("TIMESTAMP").toLocalDateTime()
+                                TaskStatus.fromString(rs.getString("STATUS"))
                         )
                 );
             }
@@ -50,5 +51,9 @@ public class H2SpyRepository implements SpyRepository {
         }
 
         return tasks;
+    }
+
+    private Timestamp toTimestamp(LocalDateTime dt) {
+        return  dt != null ? Timestamp.valueOf(dt) : new Timestamp(0);
     }
 }
