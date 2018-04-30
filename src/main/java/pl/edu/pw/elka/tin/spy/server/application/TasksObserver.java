@@ -64,7 +64,7 @@ public class TasksObserver extends Thread {
         this.interval = interval;
     }
 
-    public synchronized ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Task>>  getTasks() {
+    public ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Task>>  getTasks() {
         return tasks;
     }
 }
