@@ -10,17 +10,19 @@ import java.time.LocalDateTime;
 public class Task {
 
     private int id;
+    private LocalDateTime timestamp;
+    private int clientID;
     private String name;
     private TaskStatus taskStatus;
-    private LocalDateTime timestamp;
 
     @Override
     public String toString() {
         return "Task{" +
                 "id=" + id +
+                ", timestamp='" + timestamp + '\'' +
+                "clientID=" + clientID +
                 ", name='" + name + '\'' +
                 ", taskStatus=" + taskStatus +
-                ", timestamp='" + timestamp + '\'' +
                 '}';
     }
 }

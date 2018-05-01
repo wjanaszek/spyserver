@@ -5,15 +5,19 @@ import pl.edu.pw.elka.tin.spy.server.domain.SpyRepository;
 import pl.edu.pw.elka.tin.spy.server.domain.task.Task;
 import pl.edu.pw.elka.tin.spy.server.infrastructure.H2SpyRepository;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Slf4j
-public class WebMessageQueue extends Thread {
+public class TasksObserver extends Thread {
 
     private SpyRepository repository = H2SpyRepository.getInstance();
     private long interval;
-    private List<Task> tasks;
+    private LocalDateTime lastUpdateDT;
+    private ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Task>> tasks;
 
     public void run() {
         while (true) {
@@ -27,17 +31,29 @@ public class WebMessageQueue extends Thread {
         }
     }
 
-    WebMessageQueue() {
+    TasksObserver() {
         this.interval = 5000;
-        this.tasks = new ArrayList<>();
+        this.tasks = new ConcurrentHashMap<>();
     }
 
     private void checkForNewTasks() {
         //TODO: trzeba ogarnąć jak GC będzie sobie radził
         log.info("Updating task list");
 
-        tasks = repository.taskList();
-        tasks.stream().map(Object::toString).forEach(log::info);
+        List<Task> newTasks = repository.taskList(lastUpdateDT);
+        newTasks.forEach( t -> {
+            int clientID = t.getClientID();
+            Queue<Task> taskQueue = tasks.get(clientID);
+            if (taskQueue == null) {
+                ConcurrentLinkedQueue<Task> queue = new ConcurrentLinkedQueue<>();
+                queue.add(t);
+                tasks.put(clientID, queue);
+            } else {
+                taskQueue.add(t);
+            }
+        });
+        tasks.entrySet().stream().map(Object::toString).forEach(log::info);
+        lastUpdateDT = LocalDateTime.now();
     }
 
     public long getInterval() {
@@ -48,7 +64,7 @@ public class WebMessageQueue extends Thread {
         this.interval = interval;
     }
 
-    public synchronized List<Task> getTasks() {
+    public ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Task>>  getTasks() {
         return tasks;
     }
 }

@@ -3,7 +3,7 @@ package pl.edu.pw.elka.tin.spy.server.domain.task;
 public enum TaskStatus {
     IN_PROGRESS("IN PROGRESS"),
     DONE("DONE"),
-    WAITING("WAITING");
+    NEW("NEW");
 
     private String text;
 
