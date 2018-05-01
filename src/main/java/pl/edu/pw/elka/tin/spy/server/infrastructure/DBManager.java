@@ -37,9 +37,8 @@ public class DBManager {
         ds.setUrl(DB_URL);
         ds.setUsername(DB_USER);
         ds.setPassword(DB_PASSWORD);
-
-//        ds.setMaxWait(maxWaitMillis);
-//        ds.setMaxActive(maxTotal);
+        ds.setMaxTotal(20);
+        ds.setMaxWaitMillis(1000);
 
         return ds;
     }

@@ -21,15 +21,18 @@ public class NewConnectionListener {
     public NewConnectionListener() throws IOException {
         serverSocket = new ServerSocket(serverPort, backlog);
         poolExecutor = new ThreadPoolExecutor(30, Integer.MAX_VALUE, 60, TimeUnit.SECONDS, new SynchronousQueue<>());
+        poolExecutor.submit(TasksObserver.observer());
     }
 
     public void run() {
+        log.debug("Starting ");
         log.info("SpyServer started listening on new connection on port: " + serverPort);
         while (true) {
             try {
                 Socket clientSocket = serverSocket.accept();
                 log.debug("Get new connection from: " + clientSocket.getRemoteSocketAddress());
-                poolExecutor.submit(new ClientThread(clientSocket));
+                poolExecutor.submit(new ClientReaderThread(clientSocket, 1));
+                poolExecutor.submit(new ClientWriterThread(clientSocket));
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException("Socket accept exception");
