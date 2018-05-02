@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -25,14 +26,14 @@ public class NewConnectionListener {
     }
 
     public void run() {
-        log.debug("Starting ");
         log.info("SpyServer started listening on new connection on port: " + serverPort);
         while (true) {
             try {
                 Socket clientSocket = serverSocket.accept();
                 log.debug("Get new connection from: " + clientSocket.getRemoteSocketAddress());
-                poolExecutor.submit(new ClientReaderThread(clientSocket, 1));
-                poolExecutor.submit(new ClientWriterThread(clientSocket));
+                ConcurrentLinkedQueue<byte[]> queue = new ConcurrentLinkedQueue<>();
+                poolExecutor.submit(new ClientReaderThread(queue, clientSocket));
+                poolExecutor.submit(new ClientWriterThread(queue, clientSocket));
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException("Socket accept exception");

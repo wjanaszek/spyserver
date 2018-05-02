@@ -1,19 +1,15 @@
 package pl.edu.pw.elka.tin.spy.server.domain.task;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
 public enum TaskStatus {
     IN_PROGRESS("IN PROGRESS"),
     DONE("DONE"),
     NEW("NEW");
 
-    private String text;
-
-    TaskStatus(String text) {
-        this.text = text;
-    }
-
-    public String getText() {
-        return this.text;
-    }
+    @Getter private String text;
 
     public static TaskStatus fromString(String text) {
         for (TaskStatus s : TaskStatus.values()) {
@@ -21,7 +17,7 @@ public enum TaskStatus {
                 return s;
             }
         }
-        return null;
+        throw new IllegalArgumentException(text + " is invalid TaskStatus name");
     }
 
 }

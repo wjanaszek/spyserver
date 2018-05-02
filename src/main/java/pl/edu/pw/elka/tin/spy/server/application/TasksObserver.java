@@ -73,14 +73,6 @@ public class TasksObserver implements Runnable {
         lastUpdateDT = LocalDateTime.now();
     }
 
-    public long getInterval() {
-        return interval;
-    }
-
-    public void setInterval(long interval) {
-        this.interval = interval;
-    }
-
     public ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Task>> getTasksQueue() {
         return tasksQueue;
     }
