@@ -7,9 +7,9 @@ import java.sql.SQLException;
 
 public class DBManager {
 
-    private static final String DB_URL = "jdbc:h2:tcp://localhost//mnt/ubuntuDrive/h2test";
-    private static final String DB_USER = "admin";
-    private static final String DB_PASSWORD = "12345";
+    private static final String DB_URL = "jdbc:h2:tcp://localhost/~/test";
+    private static final String DB_USER = "sa";
+    private static final String DB_PASSWORD = "";
     private static final String DB_DRIVER_CLASSNAME = "org.h2.Driver";
 
     private static volatile DBManager dbManager;

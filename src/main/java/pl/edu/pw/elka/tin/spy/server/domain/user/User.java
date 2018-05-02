@@ -2,6 +2,7 @@ package pl.edu.pw.elka.tin.spy.server.domain.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Generated;
 import lombok.ToString;
 
 @Data
