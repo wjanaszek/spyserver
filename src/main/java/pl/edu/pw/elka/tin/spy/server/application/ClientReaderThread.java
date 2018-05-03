@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -43,20 +42,5 @@ public class ClientReaderThread implements Runnable {
                 throw new RuntimeException("Failed to get input stream");
             }
         }
-    }
-
-    //TODO: ugly as hell
-    private void readImage(InputStream is) throws IOException {
-//        DataInputStream dIn = new DataInputStream(is);
-//        int length = dIn.readInt();                    // read length of incoming message
-//        if(length>0) {
-//            byte[] message = new byte[length];
-//            dIn.readFully(message, 0, message.length); // read the message
-//            BufferedImage img = ImageIO.read(new ByteArrayInputStream(message));
-//            File outputFile = new File("saved.jpg");
-//            ImageIO.write(img, "jpg", outputFile);
-//            log.info("Saved photo");
-//            tasksObserver.taskDone(clientID);
-//        }
     }
 }
