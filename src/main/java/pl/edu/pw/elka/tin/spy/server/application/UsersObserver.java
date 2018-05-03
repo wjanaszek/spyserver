@@ -36,9 +36,15 @@ public class UsersObserver {
         return repository.addUser(name, password);
     }
 
-    public void logInUser(User user) {
-        repository.updateUserStatus(user, UserStatus.ACTIVE);
-        activeUsers.put(user.getID(), user);
+    public User authenticateUser(int userID, String password) {
+        User user = repository.authenticateUser(userID, password);
+        if (user != null) {
+            repository.updateUserStatus(user, UserStatus.ACTIVE);
+            activeUsers.put(user.getID(), user);
+            return user;
+        } else {
+            throw new IllegalArgumentException("Authentication for user" + userID + "failed ");
+        }
     }
 
     public void logOutUser(User user) {

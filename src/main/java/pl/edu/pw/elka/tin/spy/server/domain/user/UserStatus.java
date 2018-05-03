@@ -10,4 +10,13 @@ public enum  UserStatus {
 
     @Getter
     private String text;
+
+    public static UserStatus fromString(String text) {
+        for (UserStatus s : UserStatus.values()) {
+            if (s.text.equalsIgnoreCase(text)) {
+                return s;
+            }
+        }
+        throw new IllegalArgumentException(text + " is invalid UserStatus name");
+    }
 }

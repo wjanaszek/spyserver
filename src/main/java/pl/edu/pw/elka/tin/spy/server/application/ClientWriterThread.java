@@ -5,6 +5,7 @@ import pl.edu.pw.elka.tin.spy.server.domain.protocol.RawMessageParser;
 import pl.edu.pw.elka.tin.spy.server.domain.protocol.message.*;
 import pl.edu.pw.elka.tin.spy.server.domain.task.Task;
 import pl.edu.pw.elka.tin.spy.server.domain.user.User;
+import pl.edu.pw.elka.tin.spy.server.infrastructure.SecretGenerator;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -27,7 +28,8 @@ public class ClientWriterThread implements Runnable {
     private DataOutputStream outputStream;
     private ConcurrentLinkedQueue<byte[]> rawMessageQueue;
     private Queue<Message> outputMessageQueue;
-    private Integer clientID;
+    private User activeUser;
+    private String sessionSecret;
 
     public ClientWriterThread(ConcurrentLinkedQueue<byte[]> queue, Socket socket) {
         clientSocket = socket;
@@ -56,7 +58,7 @@ public class ClientWriterThread implements Runnable {
                         .forEach(outputMessageQueue::add);
             }
 
-            if (clientID != null) {
+            if (activeUser != null) {
                 Task newTask = tasksObserver.fetchTask(1);
                 if (newTask != null) {
                     log.debug("Fetched new task. Adding to message Queue");
@@ -77,7 +79,7 @@ public class ClientWriterThread implements Runnable {
             PhotoMessage photo = (PhotoMessage) message;
             try {
                 saveImage(photo.getPhoto());
-                tasksObserver.taskDone(clientID);
+                tasksObserver.taskDone(activeUser.getID());
             } catch (IOException e) {
                 e.printStackTrace();
                 log.error("Failed to save photo");
@@ -86,7 +88,17 @@ public class ClientWriterThread implements Runnable {
             RegistrationRequest request = (RegistrationRequest)message;
             User user = usersObserver.registerUser(request.getName(), request.getPassword());
             log.info("Added new user: " + user.getName());
-            sendMessage(new SuccessfullRegistrationMessage(user.getID()));
+            sendMessage(new SuccessfulRegistrationMessage(user.getID()));
+        } else if (message instanceof AuthRequest) {
+            AuthRequest request = (AuthRequest)message;
+            try {
+                activeUser = usersObserver.authenticateUser(request.getUserID(), request.getPassword());
+                log.info("User " + activeUser.getName() + " is active");
+                sessionSecret = SecretGenerator.generate(32);
+                sendMessage(new SuccessfulAuthMessage(sessionSecret));
+            } catch (IllegalArgumentException e) {
+                sendMessage(SimpleMessage.AuthFailed);
+            }
         } else if (message instanceof SendMessage) {
             sendMessage((SendMessage)message);
         }

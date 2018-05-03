@@ -19,5 +19,4 @@ public enum TaskStatus {
         }
         throw new IllegalArgumentException(text + " is invalid TaskStatus name");
     }
-
 }

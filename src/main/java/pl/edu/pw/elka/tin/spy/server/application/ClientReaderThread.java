@@ -11,14 +11,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class ClientReaderThread implements Runnable {
 
     private Socket clientSocket;
-    private TasksObserver tasksObserver;
     private DataInputStream inputStream;
     private ConcurrentLinkedQueue<byte[]> messageQueue;
 
 
     public ClientReaderThread(ConcurrentLinkedQueue<byte[]> queue, Socket socket) {
         this.clientSocket = socket;
-        this.tasksObserver = TasksObserver.observer();
         this.messageQueue = queue;
 
         try {

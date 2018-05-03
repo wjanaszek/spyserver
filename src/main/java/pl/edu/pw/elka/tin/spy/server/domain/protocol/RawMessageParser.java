@@ -1,9 +1,6 @@
 package pl.edu.pw.elka.tin.spy.server.domain.protocol;
 
-import pl.edu.pw.elka.tin.spy.server.domain.protocol.message.Message;
-import pl.edu.pw.elka.tin.spy.server.domain.protocol.message.PhotoMessage;
-import pl.edu.pw.elka.tin.spy.server.domain.protocol.message.RegistrationRequest;
-import pl.edu.pw.elka.tin.spy.server.domain.protocol.message.SimpleMessage;
+import pl.edu.pw.elka.tin.spy.server.domain.protocol.message.*;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -15,15 +12,25 @@ public class RawMessageParser {
         Header messageHeader = readHeader(bb);
 
         switch (messageHeader) {
-            case PHOTO:
+            case PHOTO: {
                 int photoSize = bb.remaining();
                 byte[] photo = new byte[photoSize];
                 bb.get(photo, 0, photoSize);
                 return new PhotoMessage(messageHeader, photo);
-            case REGISTRATION_REQUEST:
+            }
+
+            case REGISTRATION_REQUEST: {
                 String name = readString(bb);
                 String password = readString(bb);
                 return new RegistrationRequest(name, password);
+            }
+
+            case AUTHENTICATION_REQUEST: {
+                int userID = bb.getInt();
+                String password = readString(bb);
+                return new AuthRequest(userID, password);
+            }
+
             default:
                 return SimpleMessage.UnrecognisedHeader;
         }

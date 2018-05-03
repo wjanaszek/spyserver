@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 
 @Data
 @RequiredArgsConstructor
-public class SuccessfullRegistrationMessage implements Message, SendMessage {
+public class SuccessfulRegistrationMessage implements Message, SendMessage {
     private Header header = Header.SUCCESSFUL_REGISTRATION;
     private final int clientID;
 

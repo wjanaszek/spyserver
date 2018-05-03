@@ -52,7 +52,6 @@ public class H2SpyRepository implements SpyRepository {
             rs.close();
             stat.close();
         } catch (SQLException se) {
-            //Handle errors for JDBC
             se.printStackTrace();
         }
 
@@ -116,5 +115,32 @@ public class H2SpyRepository implements SpyRepository {
             e.printStackTrace();
         }
         throw new RuntimeException("Failed to update user");
+    }
+
+    @Override
+    public User authenticateUser(int userID, String password) {
+        String sql = "SELECT * FROM USERS WHERE USER_ID = ? AND PASSWORD = ?";
+
+        Connection connection = dbManager.getConnection();
+        try {
+            PreparedStatement stat = connection.prepareStatement(sql);
+            stat.setInt(1, userID);
+            stat.setString(2, password);
+
+            ResultSet rs = stat.executeQuery();
+            if (rs.next()) {
+                return new User(
+                        userID,
+                        rs.getString("NAME"),
+                        null,
+                        UserStatus.fromString(rs.getString("STATUS"))
+                );
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        throw new RuntimeException("Failed to authenticate user");
     }
 }
