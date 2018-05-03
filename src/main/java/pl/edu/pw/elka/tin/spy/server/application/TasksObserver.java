@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import pl.edu.pw.elka.tin.spy.server.domain.SpyRepository;
 import pl.edu.pw.elka.tin.spy.server.domain.task.Task;
 import pl.edu.pw.elka.tin.spy.server.infrastructure.H2SpyRepository;
+import pl.edu.pw.elka.tin.spy.server.infrastructure.SpyUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +21,7 @@ public class TasksObserver implements Runnable {
     private LocalDateTime lastUpdateDT;
     private ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Task>> tasksQueue;
     private ConcurrentHashMap<Integer, Boolean> activeTasks;
+    private Boolean logging = false;
 
     private TasksObserver() {
         log.debug("Starting task observer");
@@ -43,13 +45,8 @@ public class TasksObserver implements Runnable {
     @Override
     public void run() {
         while (true) {
-            try {
-                checkForNewTasks();
-                Thread.sleep(interval);
-            } catch (InterruptedException e) {
-                log.info("interrupted");
-                e.printStackTrace();
-            }
+            checkForNewTasks();
+            SpyUtils.sleep(interval);
         }
     }
 
@@ -69,7 +66,7 @@ public class TasksObserver implements Runnable {
                 taskQueue.add(t);
             }
         });
-        tasksQueue.entrySet().stream().map(Object::toString).forEach(log::info);
+        if (logging) tasksQueue.entrySet().stream().map(Object::toString).forEach(log::info);
         lastUpdateDT = LocalDateTime.now();
     }
 

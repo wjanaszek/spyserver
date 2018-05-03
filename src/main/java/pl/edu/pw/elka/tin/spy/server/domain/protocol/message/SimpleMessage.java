@@ -1,4 +1,6 @@
-package pl.edu.pw.elka.tin.spy.server.domain.protocol;
+package pl.edu.pw.elka.tin.spy.server.domain.protocol.message;
+
+import pl.edu.pw.elka.tin.spy.server.domain.protocol.Header;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -15,9 +17,10 @@ public class SimpleMessage implements Message, SendMessage {
 
     @Override
     public byte[] toByteArray() {
-        ByteBuffer bb = ByteBuffer.allocate(7);
-        bb.putInt(3);
-        bb.put(header.getValue().getBytes(StandardCharsets.UTF_8));
+        byte[] header = this.header.getValue().getBytes(StandardCharsets.UTF_8);
+        ByteBuffer bb = ByteBuffer.allocate(messageSizeFieldInBytes + header.length);
+        bb.putInt(header.length);
+        bb.put(header);
         return bb.array();
     }
 }

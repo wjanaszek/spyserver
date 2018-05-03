@@ -10,5 +10,6 @@ import lombok.ToString;
 public class User {
     private int ID;
     private String name;
+    private String password;
     private UserStatus status;
 }

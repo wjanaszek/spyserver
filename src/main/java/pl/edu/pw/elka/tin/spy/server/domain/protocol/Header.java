@@ -7,6 +7,9 @@ import lombok.Getter;
 public enum Header {
     PHOTO_REQUEST("SPH"),
     PHOTO("PHT"),
+    REGISTRATION_REQUEST("REG"),
+    SUCCESSFUL_REGISTRATION("ROK"),
+    AUTHENTICATION_REQUEST("AUT"),
     UNRECOGNISED("WTF");
 
     @Getter String value;

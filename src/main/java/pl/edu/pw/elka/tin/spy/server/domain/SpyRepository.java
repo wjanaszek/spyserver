@@ -10,6 +10,6 @@ import java.util.List;
 public interface SpyRepository {
 
     List<Task> taskList(LocalDateTime lastUpdateDT);
-    User addUser(String name);
+    User addUser(String name, String password);
     User updateUserStatus(User user, UserStatus newStatus);
 }

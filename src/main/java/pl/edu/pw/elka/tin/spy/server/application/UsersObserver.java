@@ -32,8 +32,8 @@ public class UsersObserver {
         return instance;
     }
 
-    public User registerUser(String name) {
-        return repository.addUser(name);
+    public User registerUser(String name, String password) {
+        return repository.addUser(name, password);
     }
 
     public void logInUser(User user) {

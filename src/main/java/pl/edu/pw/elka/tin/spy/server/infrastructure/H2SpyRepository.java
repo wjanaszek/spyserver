@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 
+import static java.lang.Math.toIntExact;
+
 @Slf4j
 public class H2SpyRepository implements SpyRepository {
     private final static H2SpyRepository instance = new H2SpyRepository();
@@ -62,13 +64,14 @@ public class H2SpyRepository implements SpyRepository {
     }
 
     @Override
-    public User addUser(String name) {
-        String sql = "INSERT INTO USERS(NAME) VALUES (?)";
+    public User addUser(String name, String password) {
+        String sql = "INSERT INTO USERS(NAME, PASSWORD) VALUES (?, ?)";
 
         Connection connection = dbManager.getConnection();
         try {
             PreparedStatement stat = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stat.setString(1, name);
+            stat.setString(2, password);
 
             int affectedRows = stat.executeUpdate();
 
@@ -76,10 +79,15 @@ public class H2SpyRepository implements SpyRepository {
                 throw new SQLException("Creating user failed");
             }
 
-            stat.getGeneratedKeys().next();
-            int userID = stat.getGeneratedKeys().getInt(1);
+            long userID;
+            ResultSet generatedKeys = stat.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                userID = generatedKeys.getLong(1);
+            } else {
+                throw new RuntimeException("Failed to get generated primary key");
+            }
 
-            return new User(userID, name, UserStatus.LOGOUT);
+            return new User(toIntExact(userID), name, password, UserStatus.LOGOUT);
         } catch (SQLException e) {
             e.printStackTrace();
         }

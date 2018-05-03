@@ -1,9 +1,10 @@
 package pl.edu.pw.elka.tin.spy.server.application;
 
 import lombok.extern.slf4j.Slf4j;
-import pl.edu.pw.elka.tin.spy.server.domain.protocol.*;
+import pl.edu.pw.elka.tin.spy.server.domain.protocol.RawMessageParser;
+import pl.edu.pw.elka.tin.spy.server.domain.protocol.message.*;
 import pl.edu.pw.elka.tin.spy.server.domain.task.Task;
-import pl.edu.pw.elka.tin.spy.server.infrastructure.SpyUtils;
+import pl.edu.pw.elka.tin.spy.server.domain.user.User;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -22,14 +23,16 @@ public class ClientWriterThread implements Runnable {
 
     private Socket clientSocket;
     private TasksObserver tasksObserver;
+    private UsersObserver usersObserver;
     private DataOutputStream outputStream;
     private ConcurrentLinkedQueue<byte[]> rawMessageQueue;
     private Queue<Message> outputMessageQueue;
-    private int clientID = 1;
+    private Integer clientID;
 
     public ClientWriterThread(ConcurrentLinkedQueue<byte[]> queue, Socket socket) {
         clientSocket = socket;
         tasksObserver = TasksObserver.observer();
+        usersObserver = UsersObserver.observer();
         rawMessageQueue = queue;
         outputMessageQueue = new LinkedList<>();
         try {
@@ -53,35 +56,45 @@ public class ClientWriterThread implements Runnable {
                         .forEach(outputMessageQueue::add);
             }
 
-            Task newTask = tasksObserver.fetchTask(1);
-            if (newTask != null) {
-                log.debug("Fetched new task. Adding to message Queue");
-                outputMessageQueue.add(SimpleMessage.PhotoRequest);
+            if (clientID != null) {
+                Task newTask = tasksObserver.fetchTask(1);
+                if (newTask != null) {
+                    log.debug("Fetched new task. Adding to message Queue");
+                    outputMessageQueue.add(SimpleMessage.PhotoRequest);
+                }
             }
 
             Message newMessage = outputMessageQueue.poll();
 
             if (newMessage != null) {
-                if (newMessage instanceof PhotoMessage) {
-                    PhotoMessage photo = (PhotoMessage) newMessage;
-                    try {
-                        saveImage(photo.getPhoto());
-                        tasksObserver.taskDone(clientID);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        log.error("Failed to save photo");
-                    }
-                } else if (newMessage instanceof SendMessage) {
-                    sendMessage(((SendMessage)newMessage).toByteArray());
-                }
+                handleMessage(newMessage);
             }
-            SpyUtils.sleep(5000);
         }
     }
 
-    private void sendMessage(byte[] byteArray) {
+    private void handleMessage(Message message) {
+        if (message instanceof PhotoMessage) {
+            PhotoMessage photo = (PhotoMessage) message;
+            try {
+                saveImage(photo.getPhoto());
+                tasksObserver.taskDone(clientID);
+            } catch (IOException e) {
+                e.printStackTrace();
+                log.error("Failed to save photo");
+            }
+        } else if (message instanceof RegistrationRequest) {
+            RegistrationRequest request = (RegistrationRequest)message;
+            User user = usersObserver.registerUser(request.getName(), request.getPassword());
+            log.info("Added new user: " + user.getName());
+            sendMessage(new SuccessfullRegistrationMessage(user.getID()));
+        } else if (message instanceof SendMessage) {
+            sendMessage((SendMessage)message);
+        }
+    }
+
+    private void sendMessage(SendMessage message) {
         try {
-            outputStream.write(byteArray);
+            outputStream.write(message.toByteArray());
         } catch (IOException e) {
             e.printStackTrace();
             log.error("Failed to send message");
