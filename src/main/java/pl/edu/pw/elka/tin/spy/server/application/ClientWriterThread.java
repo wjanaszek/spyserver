@@ -7,11 +7,7 @@ import pl.edu.pw.elka.tin.spy.server.domain.task.Task;
 import pl.edu.pw.elka.tin.spy.server.domain.user.User;
 import pl.edu.pw.elka.tin.spy.server.infrastructure.SecretGenerator;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.LinkedList;
@@ -47,7 +43,6 @@ public class ClientWriterThread implements Runnable {
     @Override
     public void run() {
         while (true) {
-
             if (rawMessageQueue.size() > 0) {
                 List<byte[]> rawMessages = new LinkedList<>();
                 while (rawMessageQueue.size() > 0) {
@@ -58,7 +53,7 @@ public class ClientWriterThread implements Runnable {
                         .forEach(outputMessageQueue::add);
             }
 
-            if (activeUser != null) {
+            if (authenticatedUser()) {
                 Task newTask = tasksObserver.fetchTask(1);
                 if (newTask != null) {
                     log.debug("Fetched new task. Adding to message Queue");
@@ -74,33 +69,37 @@ public class ClientWriterThread implements Runnable {
         }
     }
 
+    private boolean authenticatedUser() {
+        return activeUser != null;
+    }
+
     private void handleMessage(Message message) {
-        if (message instanceof PhotoMessage) {
-            PhotoMessage photo = (PhotoMessage) message;
-            try {
-                saveImage(photo.getPhoto());
-                tasksObserver.taskDone(activeUser.getID());
-            } catch (IOException e) {
-                e.printStackTrace();
-                log.error("Failed to save photo");
+        switch (message.header()) {
+            case REGISTRATION_REQUEST: {
+                RegistrationRequest request = (RegistrationRequest) message;
+                User user = usersObserver.registerUser(request.getName(), request.getPassword());
+                log.info("Added new user: " + user.getName());
+                sendMessage(new SuccessfulRegistrationMessage(user.getID()));
             }
-        } else if (message instanceof RegistrationRequest) {
-            RegistrationRequest request = (RegistrationRequest)message;
-            User user = usersObserver.registerUser(request.getName(), request.getPassword());
-            log.info("Added new user: " + user.getName());
-            sendMessage(new SuccessfulRegistrationMessage(user.getID()));
-        } else if (message instanceof AuthRequest) {
-            AuthRequest request = (AuthRequest)message;
-            try {
-                activeUser = usersObserver.authenticateUser(request.getUserID(), request.getPassword());
-                log.info("User " + activeUser.getName() + " is active");
-                sessionSecret = SecretGenerator.generate(32);
-                sendMessage(new SuccessfulAuthMessage(sessionSecret));
-            } catch (IllegalArgumentException e) {
-                sendMessage(SimpleMessage.AuthFailed);
+            case AUTHENTICATION_REQUEST: {
+                AuthRequest request = (AuthRequest) message;
+                try {
+                    activeUser = usersObserver.authenticateUser(request.getUserID(), request.getPassword());
+                    log.info("User " + activeUser.getName() + " is active");
+                    sessionSecret = SecretGenerator.generate(32);
+                    sendMessage(new SuccessfulAuthMessage(sessionSecret));
+                } catch (IllegalArgumentException e) {
+                    sendMessage(SimpleMessage.AuthFailed);
+                }
             }
-        } else if (message instanceof SendMessage) {
-            sendMessage((SendMessage)message);
+            case PHOTO_REQUEST: {
+                if (authenticatedUser()) {
+                    PhotoMessage photo = (PhotoMessage) message;
+                    tasksObserver.taskDone(activeUser.getID(), photo.getPhoto());
+                } else {
+                    sendMessage(SimpleMessage.UnauthorizedRequest);
+                }
+            }
         }
     }
 
@@ -111,12 +110,5 @@ public class ClientWriterThread implements Runnable {
             e.printStackTrace();
             log.error("Failed to send message");
         }
-    }
-
-    private void saveImage(byte[] image) throws IOException {
-        BufferedImage img = ImageIO.read(new ByteArrayInputStream(image));
-        File outputFile = new File("saved.jpg");
-        ImageIO.write(img, "jpg", outputFile);
-        log.info("Saved photo");
     }
 }

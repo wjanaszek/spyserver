@@ -16,7 +16,7 @@ public class RawMessageParser {
                 int photoSize = bb.remaining();
                 byte[] photo = new byte[photoSize];
                 bb.get(photo, 0, photoSize);
-                return new PhotoMessage(messageHeader, photo);
+                return new PhotoMessage(photo);
             }
 
             case REGISTRATION_REQUEST: {

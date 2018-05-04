@@ -14,6 +14,11 @@ public class SuccessfulRegistrationMessage implements Message, SendMessage {
     private final int clientID;
 
     @Override
+    public Header header() {
+        return header;
+    }
+
+    @Override
     public byte[] toByteArray() {
         byte[] header = this.header.getValue().getBytes(StandardCharsets.UTF_8);
 

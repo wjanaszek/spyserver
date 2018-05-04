@@ -11,9 +11,15 @@ public class SimpleMessage implements Message, SendMessage {
     public static SimpleMessage PhotoRequest = new SimpleMessage(Header.PHOTO_REQUEST);
     public static SimpleMessage UnrecognisedHeader = new SimpleMessage(Header.UNRECOGNISED);
     public static SimpleMessage AuthFailed = new SimpleMessage(Header.AUTH_FAILED);
+    public static SimpleMessage UnauthorizedRequest = new SimpleMessage(Header.UNAUTHORIZED_REQUEST);
 
     public SimpleMessage(Header header) {
         this.header = header;
+    }
+
+    @Override
+    public Header header() {
+        return header;
     }
 
     @Override

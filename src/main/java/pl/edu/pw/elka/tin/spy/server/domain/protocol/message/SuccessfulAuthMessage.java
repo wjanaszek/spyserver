@@ -15,6 +15,11 @@ public class SuccessfulAuthMessage implements Message, SendMessage {
     private final String secret;
 
     @Override
+    public Header header() {
+        return header;
+    }
+
+    @Override
     public byte[] toByteArray() {
         byte[] header = this.header.getValue().getBytes(StandardCharsets.UTF_8);
         byte[] rawSecret = secret.getBytes();

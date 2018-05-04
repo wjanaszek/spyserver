@@ -11,4 +11,9 @@ public class AuthRequest implements Message {
     @Getter private Header header = Header.AUTHENTICATION_REQUEST;
     private final int userID;
     private final String password;
+
+    @Override
+    public Header header() {
+        return header;
+    }
 }

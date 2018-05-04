@@ -12,6 +12,7 @@ public enum Header {
     SUCCESSFUL_AUTH("AOK"),
     AUTH_FAILED("FCK"),
     AUTHENTICATION_REQUEST("AUT"),
+    UNAUTHORIZED_REQUEST("URQ"),
     UNRECOGNISED("WTF");
 
     @Getter String value;

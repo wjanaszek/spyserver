@@ -12,4 +12,9 @@ public class RegistrationRequest implements Message {
     private Header header = Header.REGISTRATION_REQUEST;
     private final String name;
     private final String password;
+
+    @Override
+    public Header header() {
+        return header;
+    }
 }

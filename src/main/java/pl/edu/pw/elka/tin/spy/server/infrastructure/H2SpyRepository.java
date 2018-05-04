@@ -143,4 +143,30 @@ public class H2SpyRepository implements SpyRepository {
         }
         throw new RuntimeException("Failed to authenticate user");
     }
+
+    @Override
+    public Task markTaskDone(Task task) {
+        String sql = "UPDATE TASKS SET STATUS = ?, FILE_URL = ?, LAST_UPDATE_TIMESTAMP = ? WHERE ID = ?";
+
+        Connection connection = dbManager.getConnection();
+        try {
+            PreparedStatement stat = connection.prepareStatement(sql);
+            stat.setString(1, TaskStatus.DONE.getText());
+            stat.setString(2, task.getFileURL());
+            stat.setTimestamp(3, toTimestamp(LocalDateTime.now()));
+            stat.setInt(4, task.getClientID());
+
+            int affectedRows = stat.executeUpdate();
+
+            if (affectedRows != 1) {
+                throw new SQLException("Updating task failed");
+            }
+
+            task.setTaskStatus(TaskStatus.DONE);
+            return task;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        throw new RuntimeException("Failed to update task");
+    }
 }

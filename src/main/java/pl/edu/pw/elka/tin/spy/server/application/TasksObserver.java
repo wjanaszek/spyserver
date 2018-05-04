@@ -6,6 +6,11 @@ import pl.edu.pw.elka.tin.spy.server.domain.task.Task;
 import pl.edu.pw.elka.tin.spy.server.infrastructure.H2SpyRepository;
 import pl.edu.pw.elka.tin.spy.server.infrastructure.SpyUtils;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Queue;
@@ -20,8 +25,9 @@ public class TasksObserver implements Runnable {
     private long interval;
     private LocalDateTime lastUpdateDT;
     private ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Task>> tasksQueue;
-    private ConcurrentHashMap<Integer, Boolean> activeTasks;
+    private ConcurrentHashMap<Integer, Task> activeTasks;
     private Boolean logging = false;
+    private String taskDirectory = System.getProperty("user.dir") + File.separator + "tasks";
 
     private TasksObserver() {
         log.debug("Starting task observer");
@@ -29,6 +35,7 @@ public class TasksObserver implements Runnable {
         this.interval = 5000;
         this.tasksQueue = new ConcurrentHashMap<>();
         this.activeTasks = new ConcurrentHashMap<>();
+        createTaskResultDirectory(taskDirectory);
     }
 
     public static TasksObserver observer() {
@@ -51,8 +58,9 @@ public class TasksObserver implements Runnable {
     }
 
     private void checkForNewTasks() {
-        //TODO: trzeba ogarnąć jak GC będzie sobie radził
-        log.info("Updating task list");
+        if (logging) {
+            log.info("Updating task list");
+        }
 
         List<Task> newTasks = repository.taskList(lastUpdateDT);
         newTasks.forEach( t -> {
@@ -70,20 +78,37 @@ public class TasksObserver implements Runnable {
         lastUpdateDT = LocalDateTime.now();
     }
 
-    public ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Task>> getTasksQueue() {
-        return tasksQueue;
-    }
-
     public Task fetchTask(int clientID) {
         ConcurrentLinkedQueue<Task> queue =  tasksQueue.get(clientID);
-        if (queue != null && !activeTasks.getOrDefault(clientID, false)) {
-            activeTasks.put(clientID, true);
-            return queue.poll();
+        if (queue != null && activeTasks.getOrDefault(clientID, null) != null) {
+            Task newTask = queue.poll();
+            activeTasks.put(clientID, newTask);
+            return newTask;
         } else {
             return null;
         }
     }
-    public void taskDone(int clientID) {
-        activeTasks.put(clientID, false);
+    public void taskDone(int clientID, byte[] data) {
+        Task task = activeTasks.get(clientID);
+        String filepath = taskDirectory + File.separator + task.getId() + ".jpg";
+        try {
+            saveImage(filepath, data);
+            task.setFileURL(filepath);
+            repository.markTaskDone(task);
+            activeTasks.remove(clientID);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save image");
+        }
+    }
+
+    private void saveImage(String filepath, byte[] image) throws IOException {
+        BufferedImage img = ImageIO.read(new ByteArrayInputStream(image));
+        File outputFile = new File(filepath);
+        ImageIO.write(img, "jpg", outputFile);
+        log.info("Saved photo to: " + filepath);
+    }
+
+    private void createTaskResultDirectory(String path) {
+        new File(path).mkdirs();
     }
 }
