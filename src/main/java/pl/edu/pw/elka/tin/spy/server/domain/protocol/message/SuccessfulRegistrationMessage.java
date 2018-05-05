@@ -21,9 +21,10 @@ public class SuccessfulRegistrationMessage implements Message, SendMessage {
     @Override
     public byte[] toByteArray() {
         byte[] header = this.header.getValue().getBytes(StandardCharsets.UTF_8);
+        int messageSize = 3 + 4;
 
-        ByteBuffer bb = ByteBuffer.allocate(messageSizeFieldInBytes + header.length + intFieldInBytes);
-        bb.putInt(header.length);
+        ByteBuffer bb = ByteBuffer.allocate(messageSizeFieldInBytes + messageSize);
+        bb.putInt(messageSize);
         bb.put(header);
         bb.putInt(userID);
         return bb.array();
