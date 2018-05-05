@@ -24,11 +24,10 @@ public class SuccessfulAuthMessage implements Message, SendMessage {
         byte[] header = this.header.getValue().getBytes(StandardCharsets.UTF_8);
         byte[] rawSecret = secret.getBytes();
         int rawSecretSize = rawSecret.length;
-		//messageSize = header(3) + int for rawSecretSize + rawSecretSize
-        int messageSize = 3 + 4 + rawSecretSize;
+        int payloadSize = headerSizeInBytes + intFieldInBytes + rawSecretSize;
 
-		ByteBuffer bb = ByteBuffer.allocate(messageSizeFieldInBytes + messageSize);
-		bb.putInt(messageSize);
+		ByteBuffer bb = ByteBuffer.allocate(messageSizeFieldInBytes + payloadSize);
+		bb.putInt(payloadSize);
 		bb.put(header);
         bb.putInt(rawSecretSize);
         bb.put(rawSecret);
