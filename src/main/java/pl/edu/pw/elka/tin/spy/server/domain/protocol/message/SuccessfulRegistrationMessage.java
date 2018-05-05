@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class SuccessfulRegistrationMessage implements Message, SendMessage {
     private Header header = Header.SUCCESSFUL_REGISTRATION;
-    private final int clientID;
+    private final int userID;
 
     @Override
     public Header header() {
@@ -25,7 +25,7 @@ public class SuccessfulRegistrationMessage implements Message, SendMessage {
         ByteBuffer bb = ByteBuffer.allocate(messageSizeFieldInBytes + header.length + intFieldInBytes);
         bb.putInt(header.length);
         bb.put(header);
-        bb.putInt(clientID);
+        bb.putInt(userID);
         return bb.array();
     }
 }

@@ -41,7 +41,7 @@ public class H2SpyRepository implements SpyRepository {
                         new Task(
                                 rs.getInt("ID"),
                                 rs.getTimestamp("CREATION_TIMESTAMP").toLocalDateTime(),
-                                rs.getInt("CLIENT_ID"),
+                                rs.getInt("USER_ID"),
                                 rs.getString("NAME"),
                                 TaskStatus.fromString(rs.getString("STATUS")),
                                 null,
@@ -154,7 +154,7 @@ public class H2SpyRepository implements SpyRepository {
             stat.setString(1, TaskStatus.DONE.getText());
             stat.setString(2, task.getFileURL());
             stat.setTimestamp(3, toTimestamp(LocalDateTime.now()));
-            stat.setInt(4, task.getClientID());
+            stat.setInt(4, task.getUserID());
 
             int affectedRows = stat.executeUpdate();
 

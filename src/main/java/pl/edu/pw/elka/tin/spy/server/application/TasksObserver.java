@@ -64,12 +64,12 @@ public class TasksObserver implements Runnable {
 
         List<Task> newTasks = repository.taskList(lastUpdateDT);
         newTasks.forEach( t -> {
-            int clientID = t.getClientID();
-            Queue<Task> taskQueue = tasksQueue.get(clientID);
+            int userID = t.getUserID();
+            Queue<Task> taskQueue = tasksQueue.get(userID);
             if (taskQueue == null) {
                 ConcurrentLinkedQueue<Task> queue = new ConcurrentLinkedQueue<>();
                 queue.add(t);
-                tasksQueue.put(clientID, queue);
+                tasksQueue.put(userID, queue);
             } else {
                 taskQueue.add(t);
             }
@@ -78,24 +78,24 @@ public class TasksObserver implements Runnable {
         lastUpdateDT = LocalDateTime.now();
     }
 
-    public Task fetchTask(int clientID) {
-        ConcurrentLinkedQueue<Task> queue =  tasksQueue.get(clientID);
-        if (queue != null && activeTasks.getOrDefault(clientID, null) != null) {
+    public Task fetchTask(int userID) {
+        ConcurrentLinkedQueue<Task> queue =  tasksQueue.get(userID);
+        if (queue != null && activeTasks.getOrDefault(userID, null) != null) {
             Task newTask = queue.poll();
-            activeTasks.put(clientID, newTask);
+            activeTasks.put(userID, newTask);
             return newTask;
         } else {
             return null;
         }
     }
-    public void taskDone(int clientID, byte[] data) {
-        Task task = activeTasks.get(clientID);
+    public void taskDone(int userID, byte[] data) {
+        Task task = activeTasks.get(userID);
         String filepath = taskDirectory + File.separator + task.getId() + ".jpg";
         try {
             saveImage(filepath, data);
             task.setFileURL(filepath);
             repository.markTaskDone(task);
-            activeTasks.remove(clientID);
+            activeTasks.remove(userID);
         } catch (IOException e) {
             throw new RuntimeException("Failed to save image");
         }

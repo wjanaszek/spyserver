@@ -13,7 +13,7 @@ public class Task {
 
     private int id;
     private LocalDateTime creationTimestamp;
-    private int clientID;
+    private int userID;
     private String name;
     private TaskStatus taskStatus;
     private LocalDateTime lastUpdateTimestamp;
