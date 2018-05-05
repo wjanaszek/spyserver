@@ -19,17 +19,9 @@ public class SpyServer extends Thread {
 
     SpyServer() throws IOException {
         this.listener = new NewConnectionListener();
-//        this.tasksObserver = new TasksObserver();
-//        this.tasksObserver.start();
     }
 
     public void run() {
         listener.run();
     }
-
-//    public String startServer() {
-//        TasksObserver mq = new TasksObserver();
-//        mq.start();
-//        return "Server started";
-//    }
 }

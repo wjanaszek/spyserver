@@ -12,6 +12,7 @@ public class SimpleMessage implements Message, SendMessage {
     public static SimpleMessage UnrecognisedHeader = new SimpleMessage(Header.UNRECOGNISED);
     public static SimpleMessage AuthFailed = new SimpleMessage(Header.AUTH_FAILED);
     public static SimpleMessage UnauthorizedRequest = new SimpleMessage(Header.UNAUTHORIZED_REQUEST);
+    public static SimpleMessage RegistrationFailed = new SimpleMessage(Header.REGISTRATION_FAILED);
 
     public SimpleMessage(Header header) {
         this.header = header;

@@ -10,13 +10,11 @@ import pl.edu.pw.elka.tin.spy.server.infrastructure.SecretGenerator;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Slf4j
-public class ClientWriterThread implements Runnable {
+public class ClientWriterThread implements Runnable, Observer {
 
     private Socket clientSocket;
     private TasksObserver tasksObserver;
@@ -26,6 +24,7 @@ public class ClientWriterThread implements Runnable {
     private Queue<Message> outputMessageQueue;
     private User activeUser;
     private String sessionSecret;
+    private boolean isRunning = true;
 
     public ClientWriterThread(ConcurrentLinkedQueue<byte[]> queue, Socket socket) {
         clientSocket = socket;
@@ -42,7 +41,7 @@ public class ClientWriterThread implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
+        while (isRunning) {
             if (rawMessageQueue.size() > 0) {
                 List<byte[]> rawMessages = new LinkedList<>();
                 while (rawMessageQueue.size() > 0) {
@@ -69,17 +68,18 @@ public class ClientWriterThread implements Runnable {
         }
     }
 
-    private boolean authenticatedUser() {
-        return activeUser != null;
-    }
-
     private void handleMessage(Message message) {
         switch (message.header()) {
             case REGISTRATION_REQUEST: {
                 RegistrationRequest request = (RegistrationRequest) message;
-                User user = usersObserver.registerUser(request.getName(), request.getPassword());
-                log.info("Added new user: " + user.getName());
-                sendMessage(new SuccessfulRegistrationMessage(user.getID()));
+                try {
+                    User user = usersObserver.registerUser(request.getName(), request.getPassword());
+                    log.info("Added new user: " + user.getName());
+                    sendMessage(new SuccessfulRegistrationMessage(user.getID()));
+                } catch (IllegalArgumentException e) {
+                    sendMessage(SimpleMessage.RegistrationFailed);
+                }
+                break;
             }
             case AUTHENTICATION_REQUEST: {
                 AuthRequest request = (AuthRequest) message;
@@ -91,6 +91,7 @@ public class ClientWriterThread implements Runnable {
                 } catch (IllegalArgumentException e) {
                     sendMessage(SimpleMessage.AuthFailed);
                 }
+                break;
             }
             case PHOTO_REQUEST: {
                 if (authenticatedUser()) {
@@ -99,8 +100,18 @@ public class ClientWriterThread implements Runnable {
                 } else {
                     sendMessage(SimpleMessage.UnauthorizedRequest);
                 }
+                break;
             }
         }
+    }
+
+    private boolean authenticatedUser() {
+        return activeUser != null;
+    }
+
+    @Override
+    public void update(Observable observable, Object o) {
+        isRunning = false;
     }
 
     private void sendMessage(SendMessage message) {

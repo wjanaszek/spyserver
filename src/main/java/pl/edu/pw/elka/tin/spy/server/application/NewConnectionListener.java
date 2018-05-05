@@ -12,11 +12,9 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class NewConnectionListener {
-
     private final int serverPort = 9999;
     private final int backlog = 50;
     private ServerSocket serverSocket;
-
     private ThreadPoolExecutor poolExecutor;
 
     public NewConnectionListener() throws IOException {
@@ -31,14 +29,20 @@ public class NewConnectionListener {
             try {
                 Socket clientSocket = serverSocket.accept();
                 log.debug("Get new connection from: " + clientSocket.getRemoteSocketAddress());
-                ConcurrentLinkedQueue<byte[]> queue = new ConcurrentLinkedQueue<>();
-                poolExecutor.submit(new ClientReaderThread(queue, clientSocket));
-                poolExecutor.submit(new ClientWriterThread(queue, clientSocket));
+                handleNewConnection(clientSocket);
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException("Socket accept exception");
             }
         }
+    }
 
+    private void handleNewConnection(Socket socket) {
+        ConcurrentLinkedQueue<byte[]> queue = new ConcurrentLinkedQueue<>();
+        ClientReaderThread reader = new ClientReaderThread(queue, socket);
+        ClientWriterThread writer = new ClientWriterThread(queue, socket);
+        reader.addObserver(writer);
+        poolExecutor.submit(reader);
+        poolExecutor.submit(writer);
     }
 }

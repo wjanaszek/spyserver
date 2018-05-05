@@ -88,9 +88,8 @@ public class H2SpyRepository implements SpyRepository {
 
             return new User(toIntExact(userID), name, password, UserStatus.LOGOUT);
         } catch (SQLException e) {
-            e.printStackTrace();
+           throw new IllegalArgumentException("User name already taken");
         }
-        throw new RuntimeException("Failed to create new user");
     }
 
     @Override

@@ -13,7 +13,8 @@ public enum Header {
     AUTH_FAILED("FCK"),
     AUTHENTICATION_REQUEST("AUT"),
     UNAUTHORIZED_REQUEST("URQ"),
-    UNRECOGNISED("WTF");
+    UNRECOGNISED("WTF"),
+    REGISTRATION_FAILED("NAT");
 
     @Getter String value;
 

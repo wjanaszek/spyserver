@@ -1,19 +1,20 @@
 package pl.edu.pw.elka.tin.spy.server.application;
 
 import lombok.extern.slf4j.Slf4j;
+import pl.edu.pw.elka.tin.spy.server.infrastructure.SpyUtils;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Observable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Slf4j
-public class ClientReaderThread implements Runnable {
+public class ClientReaderThread extends Observable implements Runnable {
 
     private Socket clientSocket;
     private DataInputStream inputStream;
     private ConcurrentLinkedQueue<byte[]> messageQueue;
-
 
     public ClientReaderThread(ConcurrentLinkedQueue<byte[]> queue, Socket socket) {
         this.clientSocket = socket;
@@ -37,8 +38,16 @@ public class ClientReaderThread implements Runnable {
                     messageQueue.add(message);
                 }
             } catch (IOException e) {
-                throw new RuntimeException("Failed to get input stream");
+                log.debug("Lost connection with " + clientSocket.getRemoteSocketAddress());
+                notifyListeners();
+                SpyUtils.closeSocket(clientSocket);
+                return;
             }
         }
+    }
+
+    private void notifyListeners() {
+        setChanged();
+        notifyObservers();
     }
 }
