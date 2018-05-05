@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 public class SuccessfulAuthMessage implements Message, SendMessage {
 
     @Getter
-    private Header header = Header.AUTHENTICATION_REQUEST;
+    private Header header = Header.SUCCESSFUL_AUTH;
     private final String secret;
 
     @Override
@@ -23,11 +23,14 @@ public class SuccessfulAuthMessage implements Message, SendMessage {
     public byte[] toByteArray() {
         byte[] header = this.header.getValue().getBytes(StandardCharsets.UTF_8);
         byte[] rawSecret = secret.getBytes();
+        int rawSecretSize = rawSecret.length;
+		//messageSize = header(3) + int for rawSecretSize + rawSecretSize
+        int messageSize = 3 + 4 + rawSecretSize;
 
-        ByteBuffer bb = ByteBuffer.allocate(messageSizeFieldInBytes + header.length + rawSecret.length);
-        bb.putInt(header.length);
-        bb.put(header);
-        bb.putInt(rawSecret.length);
+		ByteBuffer bb = ByteBuffer.allocate(messageSizeFieldInBytes + messageSize);
+		bb.putInt(messageSize);
+		bb.put(header);
+        bb.putInt(rawSecretSize);
         bb.put(rawSecret);
         return bb.array();
     }
