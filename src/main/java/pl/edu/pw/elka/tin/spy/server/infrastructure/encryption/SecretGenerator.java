@@ -1,4 +1,4 @@
-package pl.edu.pw.elka.tin.spy.server.infrastructure;
+package pl.edu.pw.elka.tin.spy.server.infrastructure.encryption;
 
 import java.security.SecureRandom;
 

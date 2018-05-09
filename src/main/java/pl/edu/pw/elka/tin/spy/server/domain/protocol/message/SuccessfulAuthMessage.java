@@ -12,7 +12,7 @@ public class SuccessfulAuthMessage implements Message, SendMessage {
 
     @Getter
     private Header header = Header.SUCCESSFUL_AUTH;
-    private final String secret;
+    private final byte[] secret;
 
     @Override
     public Header header() {
@@ -22,15 +22,14 @@ public class SuccessfulAuthMessage implements Message, SendMessage {
     @Override
     public byte[] toByteArray() {
         byte[] header = this.header.getValue().getBytes(StandardCharsets.UTF_8);
-        byte[] rawSecret = secret.getBytes();
-        int rawSecretSize = rawSecret.length;
+        int rawSecretSize = secret.length;
         int payloadSize = headerSizeInBytes + intFieldInBytes + rawSecretSize;
 
 		ByteBuffer bb = ByteBuffer.allocate(messageSizeFieldInBytes + payloadSize);
 		bb.putInt(payloadSize);
 		bb.put(header);
         bb.putInt(rawSecretSize);
-        bb.put(rawSecret);
+        bb.put(secret);
         return bb.array();
     }
 }

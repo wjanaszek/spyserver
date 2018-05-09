@@ -3,11 +3,13 @@ package pl.edu.pw.elka.tin.spy.server.application.threads;
 import lombok.extern.slf4j.Slf4j;
 import pl.edu.pw.elka.tin.spy.server.application.observers.TasksObserver;
 import pl.edu.pw.elka.tin.spy.server.application.observers.UsersObserver;
+import pl.edu.pw.elka.tin.spy.server.domain.Encryptor;
 import pl.edu.pw.elka.tin.spy.server.domain.protocol.RawMessageParser;
 import pl.edu.pw.elka.tin.spy.server.domain.protocol.message.*;
 import pl.edu.pw.elka.tin.spy.server.domain.task.Task;
 import pl.edu.pw.elka.tin.spy.server.domain.user.User;
-import pl.edu.pw.elka.tin.spy.server.infrastructure.SecretGenerator;
+import pl.edu.pw.elka.tin.spy.server.infrastructure.encryption.SecretGenerator;
+import pl.edu.pw.elka.tin.spy.server.infrastructure.encryption.XOREncryptor;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -25,8 +27,9 @@ public class ClientWriterThread implements Runnable, Observer {
     private ConcurrentLinkedQueue<byte[]> rawMessageQueue;
     private Queue<Message> outputMessageQueue;
     private User activeUser;
-    private String sessionSecret;
+    private byte[] sessionSecret;
     private boolean isRunning = true;
+    private Encryptor encryptor;
 
     public ClientWriterThread(ConcurrentLinkedQueue<byte[]> queue, Socket socket) {
         clientSocket = socket;
@@ -34,6 +37,7 @@ public class ClientWriterThread implements Runnable, Observer {
         usersObserver = UsersObserver.observer();
         rawMessageQueue = queue;
         outputMessageQueue = new LinkedList<>();
+        encryptor = new XOREncryptor();
         try {
             outputStream = new DataOutputStream(clientSocket.getOutputStream());
         } catch (IOException e) {
@@ -50,6 +54,7 @@ public class ClientWriterThread implements Runnable, Observer {
                     rawMessages.add(rawMessageQueue.poll());
                 }
                 rawMessages.stream()
+                        .map((m) -> encryptor.decrypt(m, sessionSecret))
                         .map(RawMessageParser::parse)
                         .forEach(outputMessageQueue::add);
             }
@@ -89,7 +94,7 @@ public class ClientWriterThread implements Runnable, Observer {
                 try {
                     activeUser = usersObserver.authenticateUser(request.getUserID(), request.getPassword());
                     log.info("User " + activeUser.getName() + " is active");
-                    sessionSecret = SecretGenerator.generate(32);
+                    sessionSecret = SecretGenerator.generate(32).getBytes();
                     sendMessage(new SuccessfulAuthMessage(sessionSecret));
                 } catch (IllegalArgumentException e) {
                     sendMessage(SimpleMessage.AuthFailed);
