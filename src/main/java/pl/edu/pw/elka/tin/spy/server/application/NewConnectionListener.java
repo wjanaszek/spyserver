@@ -1,6 +1,10 @@
 package pl.edu.pw.elka.tin.spy.server.application;
 
 import lombok.extern.slf4j.Slf4j;
+import pl.edu.pw.elka.tin.spy.server.application.observers.TasksObserver;
+import pl.edu.pw.elka.tin.spy.server.application.observers.UsersObserver;
+import pl.edu.pw.elka.tin.spy.server.application.threads.ClientReaderThread;
+import pl.edu.pw.elka.tin.spy.server.application.threads.ClientWriterThread;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -21,6 +25,7 @@ public class NewConnectionListener {
         serverSocket = new ServerSocket(serverPort, backlog);
         poolExecutor = new ThreadPoolExecutor(30, Integer.MAX_VALUE, 60, TimeUnit.SECONDS, new SynchronousQueue<>());
         poolExecutor.submit(TasksObserver.observer());
+        UsersObserver.observer().resetUserStatuses();
     }
 
     public void run() {

@@ -1,4 +1,4 @@
-package pl.edu.pw.elka.tin.spy.server.application;
+package pl.edu.pw.elka.tin.spy.server.application.observers;
 
 import lombok.extern.slf4j.Slf4j;
 import pl.edu.pw.elka.tin.spy.server.domain.SpyRepository;

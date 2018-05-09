@@ -1,6 +1,8 @@
-package pl.edu.pw.elka.tin.spy.server.application;
+package pl.edu.pw.elka.tin.spy.server.application.threads;
 
 import lombok.extern.slf4j.Slf4j;
+import pl.edu.pw.elka.tin.spy.server.application.observers.TasksObserver;
+import pl.edu.pw.elka.tin.spy.server.application.observers.UsersObserver;
 import pl.edu.pw.elka.tin.spy.server.domain.protocol.RawMessageParser;
 import pl.edu.pw.elka.tin.spy.server.domain.protocol.message.*;
 import pl.edu.pw.elka.tin.spy.server.domain.task.Task;
@@ -66,6 +68,7 @@ public class ClientWriterThread implements Runnable, Observer {
                 handleMessage(newMessage);
             }
         }
+        clean();
     }
 
     private void handleMessage(Message message) {
@@ -120,6 +123,12 @@ public class ClientWriterThread implements Runnable, Observer {
         } catch (IOException e) {
             e.printStackTrace();
             log.error("Failed to send message");
+        }
+    }
+
+    private void clean() {
+        if (authenticatedUser()) {
+            usersObserver.logOutUser(activeUser);
         }
     }
 }

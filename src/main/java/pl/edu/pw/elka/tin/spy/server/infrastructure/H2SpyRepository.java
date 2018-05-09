@@ -168,4 +168,18 @@ public class H2SpyRepository implements SpyRepository {
         }
         throw new RuntimeException("Failed to update task");
     }
+
+    @Override
+    public void resetUsersStatuses() {
+        String sql = "UPDATE USERS SET STATUS = ?";
+
+        Connection connection = dbManager.getConnection();
+        try {
+            PreparedStatement stat = connection.prepareStatement(sql);
+            stat.setString(1, UserStatus.LOGOUT.getText());
+            stat.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to reset users statuses");
+        }
+    }
 }

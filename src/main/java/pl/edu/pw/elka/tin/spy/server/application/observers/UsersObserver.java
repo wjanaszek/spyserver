@@ -1,4 +1,4 @@
-package pl.edu.pw.elka.tin.spy.server.application;
+package pl.edu.pw.elka.tin.spy.server.application.observers;
 
 import lombok.extern.slf4j.Slf4j;
 import pl.edu.pw.elka.tin.spy.server.domain.SpyRepository;
@@ -16,8 +16,6 @@ public class UsersObserver {
     private ConcurrentHashMap<Integer, User> activeUsers;
 
     private UsersObserver() {
-        log.debug("Starting users observer");
-
         this.activeUsers = new ConcurrentHashMap<>();
     }
 
@@ -49,7 +47,10 @@ public class UsersObserver {
 
     public void logOutUser(User user) {
         repository.updateUserStatus(user, UserStatus.LOGOUT);
-        activeUsers.put(user.getID(), null);
+        activeUsers.remove(user.getID());
     }
 
+    public void resetUserStatuses() {
+        repository.resetUsersStatuses();
+    }
 }
