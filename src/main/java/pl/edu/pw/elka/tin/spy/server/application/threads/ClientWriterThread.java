@@ -60,7 +60,7 @@ public class ClientWriterThread implements Runnable, Observer {
             }
 
             if (authenticatedUser()) {
-                Task newTask = tasksObserver.fetchTask(1);
+                Task newTask = tasksObserver.fetchTask(activeUser.getID());
                 if (newTask != null) {
                     log.debug("Fetched new task. Adding to message Queue");
                     outputMessageQueue.add(SimpleMessage.PhotoRequest);
@@ -78,6 +78,7 @@ public class ClientWriterThread implements Runnable, Observer {
 
     private void handleMessage(Message message) {
         switch (message.header()) {
+
             case REGISTRATION_REQUEST: {
                 RegistrationRequest request = (RegistrationRequest) message;
                 try {
@@ -89,6 +90,7 @@ public class ClientWriterThread implements Runnable, Observer {
                 }
                 break;
             }
+
             case AUTHENTICATION_REQUEST: {
                 AuthRequest request = (AuthRequest) message;
                 try {
@@ -101,7 +103,13 @@ public class ClientWriterThread implements Runnable, Observer {
                 }
                 break;
             }
+
             case PHOTO_REQUEST: {
+                sendMessage(SimpleMessage.PhotoRequest);
+                break;
+            }
+
+            case PHOTO: {
                 if (authenticatedUser()) {
                     PhotoMessage photo = (PhotoMessage) message;
                     tasksObserver.taskDone(activeUser.getID(), photo.getPhoto());
