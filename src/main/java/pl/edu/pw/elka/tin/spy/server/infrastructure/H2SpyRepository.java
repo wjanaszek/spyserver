@@ -53,6 +53,8 @@ public class H2SpyRepository implements SpyRepository {
             stat.close();
         } catch (SQLException se) {
             se.printStackTrace();
+        } finally {
+            SpyUtils.closeConnection(connection);
         }
 
         return tasks;
@@ -89,6 +91,8 @@ public class H2SpyRepository implements SpyRepository {
             return new User(toIntExact(userID), name, password, UserStatus.LOGOUT);
         } catch (SQLException e) {
            throw new IllegalArgumentException("User name already taken");
+        } finally {
+            SpyUtils.closeConnection(connection);
         }
     }
 
@@ -112,6 +116,8 @@ public class H2SpyRepository implements SpyRepository {
             return user;
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            SpyUtils.closeConnection(connection);
         }
         throw new RuntimeException("Failed to update user");
     }
@@ -139,6 +145,8 @@ public class H2SpyRepository implements SpyRepository {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            SpyUtils.closeConnection(connection);
         }
         throw new RuntimeException("Failed to authenticate user");
     }
@@ -165,6 +173,8 @@ public class H2SpyRepository implements SpyRepository {
             return task;
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            SpyUtils.closeConnection(connection);
         }
         throw new RuntimeException("Failed to update task");
     }
@@ -180,6 +190,8 @@ public class H2SpyRepository implements SpyRepository {
             stat.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to reset users statuses");
+        } finally {
+            SpyUtils.closeConnection(connection);
         }
     }
 }
