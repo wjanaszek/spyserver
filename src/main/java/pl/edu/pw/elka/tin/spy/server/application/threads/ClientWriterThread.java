@@ -8,6 +8,7 @@ import pl.edu.pw.elka.tin.spy.server.domain.protocol.RawMessageParser;
 import pl.edu.pw.elka.tin.spy.server.domain.protocol.message.*;
 import pl.edu.pw.elka.tin.spy.server.domain.task.Task;
 import pl.edu.pw.elka.tin.spy.server.domain.user.User;
+import pl.edu.pw.elka.tin.spy.server.infrastructure.SpyUtils;
 import pl.edu.pw.elka.tin.spy.server.infrastructure.encryption.SecretGenerator;
 import pl.edu.pw.elka.tin.spy.server.infrastructure.encryption.XOREncryptor;
 
@@ -72,6 +73,7 @@ public class ClientWriterThread implements Runnable, Observer {
             if (newMessage != null) {
                 handleMessage(newMessage);
             }
+            SpyUtils.sleep(500);
         }
         clean();
     }
