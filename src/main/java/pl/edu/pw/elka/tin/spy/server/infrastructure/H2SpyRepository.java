@@ -153,7 +153,7 @@ public class H2SpyRepository implements SpyRepository {
             stat.setString(1, TaskStatus.DONE.getText());
             stat.setString(2, task.getFileURL());
             stat.setTimestamp(3, toTimestamp(LocalDateTime.now()));
-            stat.setInt(4, task.getUserID());
+            stat.setInt(4, task.getId());
 
             int affectedRows = stat.executeUpdate();
 
