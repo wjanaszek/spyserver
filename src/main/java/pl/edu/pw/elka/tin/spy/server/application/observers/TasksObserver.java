@@ -80,7 +80,7 @@ public class TasksObserver implements Runnable {
 
     public Task fetchTask(int userID) {
         ConcurrentLinkedQueue<Task> queue =  tasksQueue.get(userID);
-        if (queue != null && activeTasks.getOrDefault(userID, null) != null) {
+        if (queue.size() != 0) {
             Task newTask = queue.poll();
             activeTasks.put(userID, newTask);
             return newTask;
