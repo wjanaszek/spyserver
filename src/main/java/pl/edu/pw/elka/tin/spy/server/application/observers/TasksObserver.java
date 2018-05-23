@@ -80,14 +80,24 @@ public class TasksObserver implements Runnable {
 
     public Task fetchTask(int userID) {
         ConcurrentLinkedQueue<Task> queue =  tasksQueue.get(userID);
-        if (queue != null && activeTasks.getOrDefault(userID, null) == null) {
+
+        if (hasTasks(queue) && noActiveTask(userID)) {
             Task newTask = queue.poll();
             activeTasks.put(userID, newTask);
             return newTask;
-        } else {
-            return null;
         }
+
+        return null;
     }
+
+    private boolean hasTasks(ConcurrentLinkedQueue<Task> queue) {
+        return queue != null && queue.size() > 0;
+    }
+
+    private boolean noActiveTask(int userID) {
+        return activeTasks.getOrDefault(userID, null) == null;
+    }
+
     public void taskDone(int userID, byte[] data) {
         Task task = activeTasks.get(userID);
         String filepath = taskDirectory + File.separator + task.getId() + ".jpg";
